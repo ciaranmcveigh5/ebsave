@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "ebsave/cmd"
+import "github.com/ciaranmcveigh5/ebsave/cmd"
 
 func main() {
 	cmd.Execute()

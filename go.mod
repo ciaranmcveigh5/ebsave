@@ -1,4 +1,4 @@
-module ebsave
+module github.com/ciaranmcveigh5/ebsave
 
 go 1.14
 

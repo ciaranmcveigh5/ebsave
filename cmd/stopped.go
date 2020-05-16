@@ -16,10 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"ebsave/pkg/ebsaveJson"
-	"ebsave/pkg/tables"
-	"ebsave/pkg/volumes"
 	"fmt"
+
+	"github.com/ciaranmcveigh5/ebsave/pkg/ebsaveJson"
+	"github.com/ciaranmcveigh5/ebsave/pkg/tables"
+	"github.com/ciaranmcveigh5/ebsave/pkg/volumes"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
