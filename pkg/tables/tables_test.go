@@ -1,9 +1,10 @@
 package tables
 
 import (
-	"ebsave/pkg/volumes"
 	"reflect"
 	"testing"
+
+	"github.com/ciaranmcveigh5/ebsave/pkg/volumes"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"

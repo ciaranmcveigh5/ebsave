@@ -1,12 +1,13 @@
 package tables
 
 import (
-	"ebsave/pkg/ebsavePricing"
-	"ebsave/pkg/volumes"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/ciaranmcveigh5/ebsave/pkg/ebsavePricing"
+	"github.com/ciaranmcveigh5/ebsave/pkg/volumes"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
