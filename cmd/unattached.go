@@ -20,6 +20,7 @@ import (
 	"ebsave/pkg/tables"
 	"ebsave/pkg/volumes"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -33,7 +34,21 @@ var unattachedCmd = &cobra.Command{
 	Short: "Get a list of unattached volumes",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		svc := ec2.New(session.New(), aws.NewConfig().WithRegion("eu-west-1"))
+
+		flagAwsProfile, _ := cmd.Flags().GetString("profile")
+		flagAwsRegion, _ := cmd.Flags().GetString("region")
+
+		awsProfile, awsRegion := GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion)
+
+		sess, _ := session.NewSessionWithOptions(session.Options{
+			Profile: awsProfile,
+			Config: aws.Config{
+				Region: aws.String(awsRegion),
+			},
+		})
+
+		svc := ec2.New(sess)
+
 		var input *ec2.DescribeVolumesInput
 		e := volumes.EC2Client{
 			Client: svc,
@@ -50,9 +65,35 @@ var unattachedCmd = &cobra.Command{
 	},
 }
 
+func GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion string) (customAwsProfile, customAwsRegion string) {
+	customAwsProfile = ""
+
+	if flagAwsProfile != "" {
+		customAwsProfile = flagAwsProfile
+	} else if os.Getenv("AWS_PROFILE") != "" {
+		customAwsProfile = os.Getenv("AWS_PROFILE")
+	} else {
+		fmt.Println("AWS Profile must be set via the command line -profile or via the env var AWS_PROFILE")
+		os.Exit(1)
+	}
+
+	if flagAwsRegion != "" {
+		customAwsRegion = flagAwsRegion
+	} else if os.Getenv("AWS_REGION") != "" {
+		customAwsRegion = os.Getenv("AWS_REGION")
+	} else {
+		fmt.Println("AWS Region must be set via the command line -region or via the env var AWS_REGION")
+		os.Exit(1)
+	}
+
+	return flagAwsProfile, flagAwsRegion
+}
+
 func init() {
 	rootCmd.AddCommand(unattachedCmd)
 	unattachedCmd.Flags().BoolP("json", "j", false, "returns data in json format")
+	unattachedCmd.Flags().StringP("profile", "p", "", "returns data in json format")
+	unattachedCmd.Flags().StringP("region", "r", "", "returns data in json format")
 
 	// Here you will define your flags and configuration settings.
 
