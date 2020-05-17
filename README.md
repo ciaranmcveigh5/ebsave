@@ -11,33 +11,104 @@ One to two paragraph statement about your product and what it does.
 
 ## Installation
 
-OS X & Linux:
+### Prerequisites
+
+- Go Installed on the machine, see here for more details https://github.com/minio/cookbook/blob/master/docs/how-to-install-golang.md
+- AWS account and aws-cli set up, see here for more details https://docs.aws.amazon.com/polly/latest/dg/setup-aws-cli.html
+
+### OS X & Linux:
 
 ```sh
-go install 
+# Install the the ebsave repo
+go get github.com/ciaranmcveigh5/ebsave
+
+# Navigate to where the repo is installed
+cd $GOPATH/github.com/ciaranmcveigh5/ebsave
+
+# Run go install this will download all the dependencies build the project and store the binary in $GOPATH/bin/ebsave
+go install
+
+# Given the go bin path ($GOPATH/bin) is in your $PATH you should now be able to run the ebsave cli
+ebsave
 ```
 
-Windows:
+## Ebsave Examples
 
-```sh
-edit autoexec.bat
-```
+Below are examples of the 4 commands ebsave
 
-## Usage example
-
-A few motivating and useful examples of how your product can be used. Spice this up with code blocks and potentially more screenshots.
-
+### Unattached
+The unattached command will retrieve all ebs volumes in your aws account that are currently unattached (ie not attached to an EC2 instance), these often represent left over volumes from terminated instances that can potentially be removed to reduce costs.
 ```sh
 ebsave unattached
-```
 
-![](images/table.png)
+# We can also set the aws profile and region via the flags below or via the env vars AWS_PROFILE and AWS_REGION, this applies for all the commands
+
+ebsave unattached --profile production --region us-west-1
+```
+#### Output
+
+![](images/unattached/unattached-table.png)
+
+The command will return a table view as default but can also return JSON to be used as part of helper scripts and automation. In the output I have piped to jq to make the returned content more readable.
 
 ```sh
-ebsave unattached -json
+ebsave unattached --json
+```
+#### Output
+
+![](images/unattached/unattached-json.png)
+
+### Stopped
+The stoppped command will retrieve all ebs volumes in your account that are attached to stopped EC2 instances. Test instances are often stopped rather than terminated under the assumption that a stopped instance has no associated cost. While the instance does not cost anything the underlying storage (EBS volumes) does. Further investigation will be required on each volume to determine whether they are still needed.
+
+```sh
+ebsave stopped
+```
+#### Output
+
+![](images/stopped/stopped-table.png)
+
+
+```sh
+ebsave stopped --json
+```
+#### Output
+
+![](images/stopped/stopped-json.png)
+
+### NoAMI
+The noami (No AMI) command will return all EBS snapshots associated with an AMI that no longer exists. When AMI's are created AWS creates a snapshot to back them. AWS leaves the details of the associated AMI in the description of the snapshots. By getting all snapshots that have been created via the AMI process and then checking to see whether the AMI still exists we are able to obtain a list of snapshots that were created because of an AMI but that AMI no longer exists.
+
+```sh
+ebsave noami
+```
+#### Output
+
+```sh
+ebsave noami
+```
+#### Output
+
+### Duplicate
+The duplicate command looks at how many snapshots each volume has and returns a list of the volumes which exceed the defined limit of how many snapshots you expect them to have, the default is 2. Often we set up a nightly snapshot job for volumes to ensure we can recover in the event of a loss of that volume. How many of these snapshots we want to keep varies from company to company and depends on our SLA's. When creating a nightly snapshot job a key component is to clean up and remove old snapshots, if this isn't implemented as part of the job you can quickly find you have 100's of snapshot for a single volume. This command is designed to highlight these situations.
+
+```sh
+ebsave duplicate
+
+# The duplicate command also has a limit option --limit which enables you to customise what is an allowable amount of duplicates to have, ie if I set --limit=7 then the command will only return volumes with 8 or more snapshots
+
+ebsave duplicate --limt 5
+```
+#### Output
+
+![](images/duplicate/duplicate-table.png)
+
+```sh
+ebsave duplicate --json
 ```
 
-![](images/json.png)
+![](images/duplicate/duplicate-json.png)
+
 
 _For more examples and usage, please refer to the [Wiki][wiki]._
 

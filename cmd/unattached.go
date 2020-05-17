@@ -74,8 +74,9 @@ func GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion string) (customAwsProf
 	} else if os.Getenv("AWS_PROFILE") != "" {
 		customAwsProfile = os.Getenv("AWS_PROFILE")
 	} else {
-		fmt.Println("AWS Profile must be set via the command line -profile or via the env var AWS_PROFILE")
-		os.Exit(1)
+		customAwsProfile = "default"
+		// fmt.Println("AWS Profile must be set via the command line -profile or via the env var AWS_PROFILE")
+		// os.Exit(1)
 	}
 
 	if flagAwsRegion != "" {
@@ -83,18 +84,19 @@ func GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion string) (customAwsProf
 	} else if os.Getenv("AWS_REGION") != "" {
 		customAwsRegion = os.Getenv("AWS_REGION")
 	} else {
-		fmt.Println("AWS Region must be set via the command line -region or via the env var AWS_REGION")
-		os.Exit(1)
+		customAwsRegion = "eu-west-1"
+		// fmt.Println("AWS Region must be set via the command line -region or via the env var AWS_REGION")
+		// os.Exit(1)
 	}
 
-	return flagAwsProfile, flagAwsRegion
+	return customAwsProfile, customAwsRegion
 }
 
 func init() {
 	rootCmd.AddCommand(unattachedCmd)
 	unattachedCmd.Flags().BoolP("json", "j", false, "returns data in json format")
-	unattachedCmd.Flags().StringP("profile", "p", "", "returns data in json format")
-	unattachedCmd.Flags().StringP("region", "r", "", "returns data in json format")
+	unattachedCmd.Flags().StringP("profile", "p", "", "set aws profile to use, will default to default profile if not set, can also be set via the env var AWS_PROFILE")
+	unattachedCmd.Flags().StringP("region", "r", "", "set aws region to use, will default to eu-west-1 if not set, can also be set via the env var AWS_REGION")
 
 	// Here you will define your flags and configuration settings.
 
