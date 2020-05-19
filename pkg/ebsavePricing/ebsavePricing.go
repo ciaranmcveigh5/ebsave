@@ -14,9 +14,9 @@ import (
 )
 
 type AssetCost struct {
-	Timeframe string
-	Currency  string
-	Value     float64
+	Timeframe string  `json:"timeframe,omitempty"`
+	Currency  string  `json:"currency,omitempty"`
+	Value     float64 `json:"value,omitempty"`
 }
 
 var awsRegion = map[string]string{

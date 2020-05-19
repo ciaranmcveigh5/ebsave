@@ -13,7 +13,7 @@ func TestParseVolumesToJson(t *testing.T) {
 
 	t.Run("no volumes", func(t *testing.T) {
 		volumes := []*ec2.Volume{}
-		returned := ParseVolumesToJson(volumes)
+		returned, _ := ParseVolumesToJson(volumes)
 		expected := "{}"
 		assertEqual(t, expected, returned)
 
@@ -28,8 +28,8 @@ func TestParseVolumesToJson(t *testing.T) {
 				VolumeType:       aws.String("gp2"),
 			},
 		}
-		returned := ParseVolumesToJson(volumes)
-		expected := `{"Assets":[{"AssetId":"vol-123","Size":{"Unit":"GB","Value":600},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":66}}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":66}}`
+		returned, _ := ParseVolumesToJson(volumes)
+		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":600},"cost":{"timeframe":"monthly","currency":"USD","value":66}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":66}}`
 		assertEqual(t, expected, returned)
 
 	})
@@ -49,8 +49,8 @@ func TestParseVolumesToJson(t *testing.T) {
 				VolumeType:       aws.String("gp2"),
 			},
 		}
-		returned := ParseVolumesToJson(volumes)
-		expected := `{"Assets":[{"AssetId":"vol-123","Size":{"Unit":"GB","Value":600},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":66}},{"AssetId":"vol-abc","Size":{"Unit":"GB","Value":200},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":22}}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":88}}`
+		returned, _ := ParseVolumesToJson(volumes)
+		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":600},"cost":{"timeframe":"monthly","currency":"USD","value":66}},{"assetId":"vol-abc","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":22}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":88}}`
 		assertEqual(t, expected, returned)
 	})
 }
@@ -75,7 +75,7 @@ func TestParseSnapshotsToJson(t *testing.T) {
 		amis := []string{}
 
 		returned := ParseSnapshotsToJson(snapshots, amis)
-		expected := `{"Assets":[{"AssetId":"snap-123","Size":{"Unit":"GB","Value":200},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":10}}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":10}}`
+		expected := `{"assets":[{"assetId":"snap-123","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":10}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":10}}`
 		assertEqual(t, expected, returned)
 	})
 
@@ -120,7 +120,7 @@ func TestParseSnapshotsToJson(t *testing.T) {
 		}
 
 		returned := ParseSnapshotsToJson(snapshots, amis)
-		expected := `{"Assets":[{"AssetId":"snap-abc","Size":{"Unit":"GB","Value":200},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":10}},{"AssetId":"snap-xyz","Size":{"Unit":"GB","Value":400},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":20}}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":30}}`
+		expected := `{"assets":[{"assetId":"snap-abc","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":10}},{"assetId":"snap-xyz","size":{"unit":"GB","value":400},"cost":{"timeframe":"monthly","currency":"USD","value":20}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":30}}`
 		assertEqual(t, expected, returned)
 
 	})
@@ -145,7 +145,7 @@ func TestParseDuplicateSnapshotsToJson(t *testing.T) {
 			},
 		}
 		returned := ParseDuplicateSnapshotsToJson(volumes, 2)
-		expected := `{"Assets":[{"AssetId":"vol-123","Size":{"Unit":"GB","Value":200},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":30},"snapshots":["snap-123","snap-456","snap-789"]}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":30}}`
+		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":30},"snapshots":["snap-123","snap-456","snap-789"]}],"totalCost":{"timeframe":"monthly","currency":"USD","value":30}}`
 
 		assertEqual(t, expected, returned)
 	})
@@ -182,7 +182,7 @@ func TestParseDuplicateSnapshotsToJson(t *testing.T) {
 			},
 		}
 		returned := ParseDuplicateSnapshotsToJson(volumes, 2)
-		expected := `{"Assets":[{"AssetId":"vol-123","Size":{"Unit":"GB","Value":200},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":30},"snapshots":["snap-123","snap-456","snap-789"]},{"AssetId":"vol-xyz","Size":{"Unit":"GB","Value":400},"Cost":{"Timeframe":"monthly","Currency":"USD","Value":80},"snapshots":["snap-xyz","snap-123","snap-456","snap-789"]}],"TotalCost":{"Timeframe":"monthly","Currency":"USD","Value":110}}`
+		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":30},"snapshots":["snap-123","snap-456","snap-789"]},{"assetId":"vol-xyz","size":{"unit":"GB","value":400},"cost":{"timeframe":"monthly","currency":"USD","value":80},"snapshots":["snap-xyz","snap-123","snap-456","snap-789"]}],"totalCost":{"timeframe":"monthly","currency":"USD","value":110}}`
 
 		assertEqual(t, expected, returned)
 	})

@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/ciaranmcveigh5/ebsave/pkg/ebsaveJson"
@@ -36,17 +37,21 @@ var unattachedCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		flagAwsProfile, _ := cmd.Flags().GetString("profile")
-		flagAwsRegion, _ := cmd.Flags().GetString("region")
+		flagAwsProfile, err := cmd.Flags().GetString("profile")
+		handleError(err)
+		flagAwsRegion, err := cmd.Flags().GetString("region")
+		handleError(err)
 
 		awsProfile, awsRegion := GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion)
 
-		sess, _ := session.NewSessionWithOptions(session.Options{
+		sess, err := session.NewSessionWithOptions(session.Options{
 			Profile: awsProfile,
 			Config: aws.Config{
 				Region: aws.String(awsRegion),
 			},
 		})
+
+		handleError(err)
 
 		svc := ec2.New(sess)
 
@@ -54,11 +59,19 @@ var unattachedCmd = &cobra.Command{
 		e := volumes.EC2Client{
 			Client: svc,
 		}
-		result, _ := e.GetVolumes(input)
-		unattachedVolumes, _ := volumes.GetUnattachedVolumes(result.Volumes)
-		returnJson, _ := cmd.Flags().GetBool("json")
+
+		result, err := e.GetVolumes(input)
+		handleError(err)
+
+		unattachedVolumes := volumes.GetUnattachedVolumes(result.Volumes)
+
+		returnJson, err := cmd.Flags().GetBool("json")
+		handleError(err)
+
 		if returnJson {
-			fmt.Println(ebsaveJson.ParseVolumesToJson(unattachedVolumes))
+			json, err := ebsaveJson.ParseVolumesToJson(unattachedVolumes)
+			handleError(err)
+			fmt.Println(json)
 		} else {
 			tableDetails := tables.ParseVolumesForTable(unattachedVolumes)
 			tables.RenderAssetsTable(tableDetails)
@@ -107,4 +120,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// unattachedCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func handleError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
 }

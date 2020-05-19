@@ -15,24 +15,24 @@ import (
 )
 
 type AssetJson struct {
-	Assets    []AssetDetailsJson
-	TotalCost ebsavePricing.AssetCost
+	Assets    []AssetDetailsJson      `json:"assets,omitempty"`
+	TotalCost ebsavePricing.AssetCost `json:"totalCost,omitempty"`
 }
 
 type AssetDetailsJson struct {
-	AssetId string
+	AssetId string `json:"assetId,omitempty"`
 	Size    struct {
-		Unit  string
-		Value int
-	}
-	Cost      ebsavePricing.AssetCost
-	Snapshots []string `json:"snapshots,omitempty"`
+		Unit  string `json:"unit,omitempty"`
+		Value int    `json:"value,omitempty"`
+	} `json:"size,omitempty"`
+	Cost      ebsavePricing.AssetCost `json:"cost,omitempty"`
+	Snapshots []string                `json:"snapshots,omitempty"`
 }
 
-func ParseVolumesToJson(volumes []*ec2.Volume) string {
+func ParseVolumesToJson(volumes []*ec2.Volume) (string, error) {
 
 	if len(volumes) == 0 {
-		return "{}"
+		return "{}", nil
 	}
 
 	var volumeDetails = []AssetDetailsJson{}
@@ -68,8 +68,13 @@ func ParseVolumesToJson(volumes []*ec2.Volume) string {
 		TotalCost: totalCost,
 	}
 
-	parsedJson, _ := json.Marshal(volumesJson)
-	return string(parsedJson)
+	parsedJson, err := json.Marshal(volumesJson)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(parsedJson), nil
 }
 
 func ParseSnapshotsToJson(snapshots []*ec2.Snapshot, amis []string) string {

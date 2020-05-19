@@ -3,6 +3,7 @@ package volumes
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -130,7 +131,7 @@ func (e *EC2Client) GetImages(input *ec2.DescribeImagesInput) (*ec2.DescribeImag
 	return result, nil
 }
 
-func GetUnattachedVolumes(volumes []*ec2.Volume) ([]*ec2.Volume, error) {
+func GetUnattachedVolumes(volumes []*ec2.Volume) []*ec2.Volume {
 	var unattachedVolumes = []*ec2.Volume{}
 
 	for _, volume := range volumes {
@@ -139,7 +140,7 @@ func GetUnattachedVolumes(volumes []*ec2.Volume) ([]*ec2.Volume, error) {
 		}
 	}
 
-	return unattachedVolumes, nil
+	return unattachedVolumes
 }
 
 func getStoppedInstancesIds(e *EC2Client) ([]*string, error) {
@@ -239,5 +240,11 @@ func awsErrorLog(err error) {
 		// Print the error, cast err to awserr.Error to get the Code and
 		// Message from an error.
 		fmt.Println(err.Error())
+	}
+}
+
+func handleError(err error) {
+	if err != nil {
+		log.Fatal(err)
 	}
 }

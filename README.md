@@ -106,6 +106,7 @@ ebsave duplicate --limt 5
 ```sh
 ebsave duplicate --json
 ```
+The JSON reponse follows the same convention as unattached and stopped with the added snapshots field to enable automated processes to clean up old snapshots.
 
 ![](images/duplicate/duplicate-json.png)
 

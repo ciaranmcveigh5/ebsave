@@ -83,25 +83,25 @@ func TestGetImages(t *testing.T) {
 func TestGetUnattachedVolumes(t *testing.T) {
 
 	t.Run("empty Volumes array", func(t *testing.T) {
-		returned, _ := GetUnattachedVolumes([]*ec2.Volume{})
+		returned := GetUnattachedVolumes([]*ec2.Volume{})
 		expected := []*ec2.Volume{}
 		reflectDeepEqual(t, expected, returned)
 	})
 
 	t.Run("single attached volumes", func(t *testing.T) {
-		returned, _ := GetUnattachedVolumes(mockSingleAttachedVolume)
+		returned := GetUnattachedVolumes(mockSingleAttachedVolume)
 		expected := []*ec2.Volume{}
 		reflectDeepEqual(t, expected, returned)
 	})
 
 	t.Run("single unattached volume", func(t *testing.T) {
-		returned, _ := GetUnattachedVolumes(mockSingleUnattachedVolume)
+		returned := GetUnattachedVolumes(mockSingleUnattachedVolume)
 		reflectDeepEqual(t, mockSingleUnattachedVolume, returned)
 
 	})
 
 	t.Run("multiple volumes attached and unattached", func(t *testing.T) {
-		returned, _ := GetUnattachedVolumes(mockMultipleVolumesAttachedAndUnattached)
+		returned := GetUnattachedVolumes(mockMultipleVolumesAttachedAndUnattached)
 		expected := []*ec2.Volume{
 			{
 				VolumeId: &volumeId,
