@@ -28,10 +28,10 @@ func TestParseVolumesToJson(t *testing.T) {
 				VolumeType:       aws.String("gp2"),
 			},
 		}
-		returned, _ := ParseVolumesToJson(volumes)
+		returned, err := ParseVolumesToJson(volumes)
 		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":600},"cost":{"timeframe":"monthly","currency":"USD","value":66}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":66}}`
 		assertEqual(t, expected, returned)
-
+		assertError(t, nil, err)
 	})
 
 	t.Run("multiple volumes", func(t *testing.T) {
@@ -49,9 +49,10 @@ func TestParseVolumesToJson(t *testing.T) {
 				VolumeType:       aws.String("gp2"),
 			},
 		}
-		returned, _ := ParseVolumesToJson(volumes)
+		returned, err := ParseVolumesToJson(volumes)
 		expected := `{"assets":[{"assetId":"vol-123","size":{"unit":"GB","value":600},"cost":{"timeframe":"monthly","currency":"USD","value":66}},{"assetId":"vol-abc","size":{"unit":"GB","value":200},"cost":{"timeframe":"monthly","currency":"USD","value":22}}],"totalCost":{"timeframe":"monthly","currency":"USD","value":88}}`
 		assertEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 }
 
@@ -193,5 +194,15 @@ func assertEqual(t *testing.T, expected, returned string) {
 	t.Helper()
 	if expected != returned {
 		t.Errorf("Expected %v but returned %v", expected, returned)
+	}
+}
+
+func assertError(t *testing.T, expected, returned error) {
+	t.Helper()
+	if expected != returned {
+		t.Errorf("expected %q but returned %q", expected, returned)
+	}
+	if returned == nil && expected != nil {
+		t.Fatal("expected to get an error.")
 	}
 }

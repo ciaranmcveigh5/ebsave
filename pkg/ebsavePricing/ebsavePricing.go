@@ -62,7 +62,7 @@ func (p *PricingClient) GetProducts(input *pricing.GetProductsInput) (*pricing.G
 	return result, err
 }
 
-func (p *PricingClient) GetVolumeCost(volume *ec2.Volume) AssetCost {
+func (p *PricingClient) GetVolumeCost(volume *ec2.Volume) (AssetCost, error) {
 	volumeCost := AssetCost{}
 	volumeRegion := getVolumeRegion(volume)
 
@@ -104,19 +104,22 @@ func (p *PricingClient) GetVolumeCost(volume *ec2.Volume) AssetCost {
 			// Message from an error.
 			fmt.Println(err.Error())
 		}
-		return volumeCost
+		return volumeCost, err
 	}
 
 	volumePrice := ""
 	pricingMap := result.PriceList[0]["terms"].(map[string]interface{})["OnDemand"].(map[string]interface{})
 	getUSDFromMap(pricingMap, &volumePrice)
-	volumePriceFloat, _ := strconv.ParseFloat(volumePrice, 64)
+	volumePriceFloat, err := strconv.ParseFloat(volumePrice, 64)
+	if err != nil {
+		return volumeCost, err
+	}
 
 	volumeCost.Timeframe = "monthly"
 	volumeCost.Currency = "USD"
 	volumeCost.Value = (float64(*volume.Size) * volumePriceFloat)
 
-	return volumeCost
+	return volumeCost, nil
 }
 
 func getVolumeRegion(volume *ec2.Volume) string {

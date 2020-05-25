@@ -42,7 +42,7 @@ func RenderAssetsTable(t TableDetails) {
 	table.Render()
 }
 
-func ParseVolumesForTable(volumes []*ec2.Volume) TableDetails {
+func ParseVolumesForTable(volumes []*ec2.Volume) (TableDetails, error) {
 	var volumeDetails = []AssetDetails{}
 	var tableDetails = TableDetails{
 		Assets:    volumeDetails,
@@ -50,7 +50,7 @@ func ParseVolumesForTable(volumes []*ec2.Volume) TableDetails {
 	}
 
 	if len(volumes) == 0 {
-		return tableDetails
+		return tableDetails, nil
 	}
 
 	pricingSvc := pricing.New(session.New(), aws.NewConfig().WithRegion("us-east-1"))
@@ -62,7 +62,10 @@ func ParseVolumesForTable(volumes []*ec2.Volume) TableDetails {
 
 	for _, volume := range volumes {
 		v := AssetDetails{}
-		volumeCost := p.GetVolumeCost(volume)
+		volumeCost, err := p.GetVolumeCost(volume)
+		if err != nil {
+			return tableDetails, err
+		}
 		totalCost = totalCost + volumeCost.Value
 		v.Id = *volume.VolumeId
 		v.CostPerMonth = ("$" + fmt.Sprintf("%.2f", volumeCost.Value))
@@ -76,7 +79,7 @@ func ParseVolumesForTable(volumes []*ec2.Volume) TableDetails {
 	tableDetails.Header = []string{"ID", "Size(GB)", "Cost/mo"}
 	tableDetails.Footer = []string{"", "Total", tableDetails.TotalCost}
 
-	return tableDetails
+	return tableDetails, nil
 }
 
 func ParseSnapshotsForTable(snapshots []*ec2.Snapshot, amis []string) TableDetails {

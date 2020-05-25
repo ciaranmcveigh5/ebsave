@@ -13,13 +13,14 @@ import (
 func TestParseVolumesForTable(t *testing.T) {
 	t.Run("no volumes", func(t *testing.T) {
 		volumes := []*ec2.Volume{}
-		returned := ParseVolumesForTable(volumes)
+		returned, err := ParseVolumesForTable(volumes)
 		expected := TableDetails{
 			Assets:    []AssetDetails{},
 			TotalCost: "",
 		}
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 
 	t.Run("single volume", func(t *testing.T) {
@@ -32,7 +33,7 @@ func TestParseVolumesForTable(t *testing.T) {
 			},
 		}
 
-		returned := ParseVolumesForTable(volumes)
+		returned, err := ParseVolumesForTable(volumes)
 		expected := TableDetails{
 			Assets: []AssetDetails{
 				{
@@ -48,6 +49,7 @@ func TestParseVolumesForTable(t *testing.T) {
 		}
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 
 	t.Run("multiple volumes", func(t *testing.T) {
@@ -66,7 +68,7 @@ func TestParseVolumesForTable(t *testing.T) {
 			},
 		}
 
-		returned := ParseVolumesForTable(volumes)
+		returned, err := ParseVolumesForTable(volumes)
 		expected := TableDetails{
 			Assets: []AssetDetails{
 				{
@@ -88,6 +90,7 @@ func TestParseVolumesForTable(t *testing.T) {
 		}
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 }
 
@@ -306,5 +309,15 @@ func reflectDeepEqual(t *testing.T, expected, returned TableDetails) {
 	t.Helper()
 	if !reflect.DeepEqual(expected, returned) {
 		t.Errorf("Expected %v but returned %v", expected, returned)
+	}
+}
+
+func assertError(t *testing.T, expected, returned error) {
+	t.Helper()
+	if expected != returned {
+		t.Errorf("expected %q but returned %q", expected, returned)
+	}
+	if returned == nil && expected != nil {
+		t.Fatal("expected to get an error.")
 	}
 }

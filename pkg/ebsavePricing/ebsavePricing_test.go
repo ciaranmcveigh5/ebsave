@@ -48,11 +48,23 @@ func TestGetVolumeCost(t *testing.T) {
 			Currency:  "USD",
 			Value:     22.00,
 		}
-		returned := PricingStub.GetVolumeCost(&volume)
+		returned, err := PricingStub.GetVolumeCost(&volume)
 
 		if !reflect.DeepEqual(expected, returned) {
 			t.Errorf("expected %v but returned %v", expected, returned)
 		}
 
+		assertError(t, nil, err)
+
 	})
+}
+
+func assertError(t *testing.T, expected, returned error) {
+	t.Helper()
+	if expected != returned {
+		t.Errorf("expected %q but returned %q", expected, returned)
+	}
+	if returned == nil && expected != nil {
+		t.Fatal("expected to get an error.")
+	}
 }

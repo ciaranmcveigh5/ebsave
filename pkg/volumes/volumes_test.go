@@ -193,53 +193,23 @@ func TestGenerateVolumeSnapshotDetails(t *testing.T) {
 	})
 }
 
-func TestGetVolumesAttachedToStoppedInstances(t *testing.T) {
-
-	t.Run("no stopped instances therefore no volumes", func(t *testing.T) {
-		e := &EC2Client{
-			describeVolumes: func(*ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-				return mockDescribeVolumes, nil
-			},
-			describeInstances: func(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-				return mockNoInstances, nil
-			},
-		}
-
-		expected := []*ec2.Volume{}
-		returned, _ := GetVolumesAttachedToStoppedInstances(e)
-		reflectDeepEqual(t, expected, returned)
-	})
-
-	// t.Run("single stopped instance", func(t *testing.T) {
-	// 	e := &EC2Client{
-	// 		describeVolumes: func(*ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-	// 			return mockDescribeVolumes, nil
-	// 		},
-	// 		describeInstances: func(*ec2.DescribeInstancesInput) (*ec2.DescribeInstancesOutput, error) {
-	// 			return mockNoInstances, nil
-	// 		},
-	// 	}
-
-	// 	expected := []*ec2.Volume{}
-	// 	returned, _ := GetVolumesAttachedToStoppedInstances(e)
-	// })
-}
-
 func TestGetInstanceIds(t *testing.T) {
 	t.Run("No instances", func(t *testing.T) {
 		expected := []*string{}
-		returned := GetInstanceIds(mockNoInstances)
+		returned, err := GetInstanceIds(mockNoInstances)
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 
 	t.Run("single instance", func(t *testing.T) {
 		expected := []*string{
 			aws.String("testInstanceId"),
 		}
-		returned := GetInstanceIds(mockDescribeInstances)
+		returned, err := GetInstanceIds(mockDescribeInstances)
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 
 	t.Run("multiple instances", func(t *testing.T) {
@@ -247,9 +217,10 @@ func TestGetInstanceIds(t *testing.T) {
 			aws.String("testInstanceId"),
 			aws.String("testInstanceId"),
 		}
-		returned := GetInstanceIds(mockDescribeInstancesMultiple)
+		returned, err := GetInstanceIds(mockDescribeInstancesMultiple)
 
 		reflectDeepEqual(t, expected, returned)
+		assertError(t, nil, err)
 	})
 }
 
@@ -257,5 +228,15 @@ func reflectDeepEqual(t *testing.T, expected, returned interface{}) {
 	t.Helper()
 	if !reflect.DeepEqual(returned, expected) {
 		t.Errorf("expected %q but returned %q", expected, returned)
+	}
+}
+
+func assertError(t *testing.T, expected, returned error) {
+	t.Helper()
+	if expected != returned {
+		t.Errorf("expected %q but returned %q", expected, returned)
+	}
+	if returned == nil && expected != nil {
+		t.Fatal("expected to get an error.")
 	}
 }

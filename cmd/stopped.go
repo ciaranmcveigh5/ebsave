@@ -48,8 +48,10 @@ var stoppedCmd = &cobra.Command{
 		e := volumes.EC2Client{
 			Client: svc,
 		}
-		instanceResult, _ := e.GetInstances(getStoppedInstancesinput)
-		instanceIds := volumes.GetInstanceIds(instanceResult)
+		instanceResult, err := e.GetInstances(getStoppedInstancesinput)
+		handleError(err)
+		instanceIds, err := volumes.GetInstanceIds(instanceResult)
+		handleError(err)
 		volumesInput := &ec2.DescribeVolumesInput{
 			Filters: []*ec2.Filter{
 				{
@@ -59,12 +61,17 @@ var stoppedCmd = &cobra.Command{
 			},
 		}
 
-		volumeResult, _ := e.GetVolumes(volumesInput)
-		returnJson, _ := cmd.Flags().GetBool("json")
+		volumeResult, err := e.GetVolumes(volumesInput)
+		handleError(err)
+		returnJson, err := cmd.Flags().GetBool("json")
+		handleError(err)
 		if returnJson {
-			fmt.Println(ebsaveJson.ParseVolumesToJson(volumeResult.Volumes))
+			json, err := ebsaveJson.ParseVolumesToJson(volumeResult.Volumes)
+			handleError(err)
+			fmt.Println(json)
 		} else {
-			tableDetails := tables.ParseVolumesForTable(volumeResult.Volumes)
+			tableDetails, err := tables.ParseVolumesForTable(volumeResult.Volumes)
+			handleError(err)
 			tables.RenderAssetsTable(tableDetails)
 		}
 	},

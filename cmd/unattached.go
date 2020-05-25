@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/ciaranmcveigh5/ebsave/pkg/ebsaveJson"
@@ -73,14 +72,14 @@ var unattachedCmd = &cobra.Command{
 			handleError(err)
 			fmt.Println(json)
 		} else {
-			tableDetails := tables.ParseVolumesForTable(unattachedVolumes)
+			tableDetails, err := tables.ParseVolumesForTable(unattachedVolumes)
+			handleError(err)
 			tables.RenderAssetsTable(tableDetails)
 		}
 	},
 }
 
 func GetAwsProfileAndRegion(flagAwsProfile, flagAwsRegion string) (customAwsProfile, customAwsRegion string) {
-	customAwsProfile = ""
 
 	if flagAwsProfile != "" {
 		customAwsProfile = flagAwsProfile
@@ -120,10 +119,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// unattachedCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func handleError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }

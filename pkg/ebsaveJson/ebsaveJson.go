@@ -53,7 +53,10 @@ func ParseVolumesToJson(volumes []*ec2.Volume) (string, error) {
 		v.Size.Unit = "GB"
 		v.Size.Value = int(*volume.Size)
 
-		volumeCost := p.GetVolumeCost(volume)
+		volumeCost, err := p.GetVolumeCost(volume)
+		if err != nil {
+			return "", err
+		}
 		v.Cost = volumeCost
 
 		totalCost.Value = totalCost.Value + v.Cost.Value

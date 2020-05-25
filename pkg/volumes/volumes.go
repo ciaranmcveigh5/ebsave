@@ -3,7 +3,6 @@ package volumes
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -143,65 +142,19 @@ func GetUnattachedVolumes(volumes []*ec2.Volume) []*ec2.Volume {
 	return unattachedVolumes
 }
 
-func getStoppedInstancesIds(e *EC2Client) ([]*string, error) {
-	describeInstancesInput := &ec2.DescribeInstancesInput{
-		Filters: []*ec2.Filter{
-			{
-				Name: aws.String("instance-state-name"),
-				Values: []*string{
-					aws.String("stopped"),
-				},
-			},
-		},
-	}
-
-	instancesResult, _ := e.DescribeInstances(describeInstancesInput)
-
-	var instanceIds []*string
-
-	d := InstanceData{}
-	jsonString, _ := json.Marshal(instancesResult)
-	json.Unmarshal(jsonString, &d)
-
-	for _, reservation := range d.Reservations {
-		for _, instance := range reservation.Instances {
-			instanceIds = append(instanceIds, &instance.InstanceId)
-		}
-	}
-
-	return instanceIds, nil
-}
-
-func GetVolumesAttachedToStoppedInstances(e *EC2Client) ([]*ec2.Volume, error) {
-
-	instanceIds, _ := getStoppedInstancesIds(e)
-
-	if len(instanceIds) == 0 {
-		return []*ec2.Volume{}, nil
-	}
-
-	describeVolumesInput := &ec2.DescribeVolumesInput{
-		Filters: []*ec2.Filter{
-			{
-				Name:   aws.String("attachment.instance-id"),
-				Values: instanceIds,
-			},
-		},
-	}
-
-	volumesResult, _ := e.DescribeVolumes(describeVolumesInput)
-
-	return volumesResult.Volumes, nil
-
-}
-
-func GetInstanceIds(instances *ec2.DescribeInstancesOutput) []*string {
+func GetInstanceIds(instances *ec2.DescribeInstancesOutput) ([]*string, error) {
 
 	var instanceIds = []*string{}
 
 	d := InstanceData{}
-	jsonString, _ := json.Marshal(instances)
-	json.Unmarshal(jsonString, &d)
+	jsonString, err := json.Marshal(instances)
+	if err != nil {
+		return instanceIds, err
+	}
+	err = json.Unmarshal(jsonString, &d)
+	if err != nil {
+		return instanceIds, err
+	}
 
 	for _, reservation := range d.Reservations {
 		for _, instance := range reservation.Instances {
@@ -209,7 +162,7 @@ func GetInstanceIds(instances *ec2.DescribeInstancesOutput) []*string {
 		}
 	}
 
-	return instanceIds
+	return instanceIds, nil
 }
 
 func GenerateVolumeSnapshotDetails(snapshots []*ec2.Snapshot) map[string]VolumeSnapshotData {
@@ -240,11 +193,5 @@ func awsErrorLog(err error) {
 		// Print the error, cast err to awserr.Error to get the Code and
 		// Message from an error.
 		fmt.Println(err.Error())
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		log.Fatal(err)
 	}
 }
